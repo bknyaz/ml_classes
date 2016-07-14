@@ -9,14 +9,14 @@ K = 3;
 X = zeros(N*K,D);
 y = zeros(N*K,1);
 for j=1:K
-    ix = N*(j-1)+1:N*j;
-    r = linspace(0,1,N); % radius
-    t = linspace((j-1)*4+1,j*4,N)+randn(1,N).*0.2; % theta
-    X(ix,:) = [r.*sin(t);r.*cos(t)]';
-    y(ix) = j;
+  ix = N*(j-1)+1:N*j;
+  r = linspace(0,1,N); % radius
+  t = linspace((j-1)*4+1,j*4,N)+randn(1,N).*0.2; % theta
+  X(ix,:) = [r.*sin(t);r.*cos(t)]';
+  y(ix) = j;
 end
-scatter(X(:,1), X(:,2), 40, y);
-colormap jet
+close all
+figure, scatter(X(:,1), X(:,2), 40, y, 'filled', 'MarkerEdgeColor', 'black'), colormap jet
 title('The toy spiral data with three classes')
 
 %% Initialize the parameters
@@ -67,7 +67,7 @@ W = 0.01 .* randn(D,K);
 b = zeros(1,K);
 
 % gradient descent loop
-for i=1:200
+for i=0:200
   
   % evaluate class scores, [N x K]
   scores = bsxfun(@plus, X * W, b);
@@ -112,16 +112,9 @@ fprintf('training accuracy: %.2f \n', mean(predicted_class == y))
 scores = bsxfun(@plus, [w1(:),w2(:)] * W, b);
 exp_scores = exp(scores);
 probs = bsxfun(@times, exp_scores, 1./sum(exp_scores,2));
-corect_logprobs = -log(probs(sub2ind(size(probs),[1:num_examples]',y)));
-data_loss = sum(corect_logprobs)/num_examples;
-im = zeros([size(w1),3]);
-im(:,:,3) = reshape(probs(:,1),size(w1));
-im(:,:,2) = reshape(probs(:,2),size(w1));
-im(:,:,1) = reshape(probs(:,3),size(w1));
-imagesc(w1(:),w2(:),im)
-hold on
-scatter(X(:,1),X(:,2), 40, y)
-title('The toy spiral data with three classes')
+figure, imagesc(w1(:), w2(:), reshape(probs(:,[3,2,1]),[size(w1),3])), colormap jet
+hold on, scatter(X(:,1), X(:,2), 40, y, 'filled', 'MarkerEdgeColor', 'black')
+title('The toy spiral data with three classes: Linear Classifier')
 
 %% Training a Neural Network
 % initialize parameters randomly
@@ -131,7 +124,7 @@ b = zeros(1,h);
 W2 = 0.01 .* randn(h,K);
 b2 = zeros(1,K);
 
-for i=1:10000
+for i=0:10000
   
   % evaluate class scores, [N x K]
   % evaluate class scores with a 2-layer Neural Network
@@ -157,8 +150,6 @@ for i=1:10000
   dscores(ids) = dscores(ids) - 1;
   dscores = dscores./num_examples;
   
-  % backpropate the gradient to the parameters
-  % first backprop into parameters W2 and b2
   % backpropate the gradient to the parameters
   % first backprop into parameters W2 and b2
   dW2 = hidden_layer' * dscores;
@@ -194,13 +185,6 @@ hidden_layer = max(0, bsxfun(@plus, [w1(:),w2(:)] * W, b));
 scores = bsxfun(@plus, hidden_layer * W2, b2);
 exp_scores = exp(scores);
 probs = bsxfun(@times, exp_scores, 1./sum(exp_scores,2));
-corect_logprobs = -log(probs(sub2ind(size(probs),[1:num_examples]',y)));
-data_loss = sum(corect_logprobs)/num_examples;
-im = zeros([size(w1),3]);
-im(:,:,3) = reshape(probs(:,1),size(w1));
-im(:,:,2) = reshape(probs(:,2),size(w1));
-im(:,:,1) = reshape(probs(:,3),size(w1));
-imagesc(w1(:),w2(:),im)
-hold on
-scatter(X(:,1),X(:,2), 40, y)
-title('The toy spiral data with three classes')
+figure, imagesc(w1(:), w2(:), reshape(probs(:,[3,2,1]),[size(w1),3])), colormap jet
+hold on, scatter(X(:,1),X(:,2), 40, y, 'filled', 'MarkerEdgeColor', 'black')
+title('The toy spiral data with three classes: Neural Network')
